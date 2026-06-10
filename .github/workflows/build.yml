@@ -12,7 +12,7 @@ on:
       KERNEL_SOURCE_NAME:
         description: 'Kernel Source Name'
         required: true
-    
+
 jobs:
   build:
     name: Kernel Build by ${{ github.actor }}
@@ -28,7 +28,24 @@ jobs:
       uses: pierotofy/set-swap-space@master
       with:
         swap-size-gb: 24
-      
+
+    - name: Notify Telegram - Build Started
+      run: |
+        WORKFLOW_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+          -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+          -d parse_mode="HTML" \
+          -d text="$(cat <<EOF
+        🔨 <b>Kernel Build Started</b>
+
+        👤 <b>Triggered by:</b> ${{ github.actor }}
+        📦 <b>Source:</b> <code>${{ github.event.inputs.KERNEL_SOURCE }}</code>
+        🌿 <b>Branch:</b> <code>${{ github.event.inputs.KERNEL_SOURCE_BRANCH }}</code>
+        🏷️ <b>Name:</b> <code>${{ github.event.inputs.KERNEL_SOURCE_NAME }}</code>
+        🔗 <b>Workflow:</b> <a href="${WORKFLOW_URL}">View Run</a>
+        EOF
+        )"
+
     - name: Prepare the environment
       run: |
         sudo apt update;sudo apt upgrade -y
@@ -45,10 +62,46 @@ jobs:
         gdown https://drive.google.com/uc?id=1TniO8mgoxuG81j0tsYliuoRw0_saxQwx
         unzip toolchain.zip
         rm -rf toolchain.zip
-        
+
     - name: Clone Kernel Source and Build
       run: |
-       git clone ${{ github.event.inputs.KERNEL_SOURCE }} -b ${{ github.event.inputs.KERNEL_SOURCE_BRANCH }}
-       cd ${{ github.event.inputs.KERNEL_SOURCE_NAME }}
-       bash build_kernel.sh > logcat.txt
-       curl uploader.sh -T logcat.txt
+        git clone ${{ github.event.inputs.KERNEL_SOURCE }} -b ${{ github.event.inputs.KERNEL_SOURCE_BRANCH }}
+        cd ${{ github.event.inputs.KERNEL_SOURCE_NAME }}
+        bash build_kernel.sh > logcat.txt
+        curl uploader.sh -T logcat.txt
+
+    - name: Notify Telegram - Build Success
+      if: success()
+      run: |
+        WORKFLOW_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+          -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+          -d parse_mode="HTML" \
+          -d text="$(cat <<EOF
+        ✅ <b>Kernel Build Succeeded</b>
+
+        👤 <b>Triggered by:</b> ${{ github.actor }}
+        📦 <b>Source:</b> <code>${{ github.event.inputs.KERNEL_SOURCE }}</code>
+        🌿 <b>Branch:</b> <code>${{ github.event.inputs.KERNEL_SOURCE_BRANCH }}</code>
+        🏷️ <b>Name:</b> <code>${{ github.event.inputs.KERNEL_SOURCE_NAME }}</code>
+        🔗 <b>Workflow:</b> <a href="${WORKFLOW_URL}">View Run</a>
+        EOF
+        )"
+
+    - name: Notify Telegram - Build Failed
+      if: failure()
+      run: |
+        WORKFLOW_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+          -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+          -d parse_mode="HTML" \
+          -d text="$(cat <<EOF
+        ❌ <b>Kernel Build Failed</b>
+
+        👤 <b>Triggered by:</b> ${{ github.actor }}
+        📦 <b>Source:</b> <code>${{ github.event.inputs.KERNEL_SOURCE }}</code>
+        🌿 <b>Branch:</b> <code>${{ github.event.inputs.KERNEL_SOURCE_BRANCH }}</code>
+        🏷️ <b>Name:</b> <code>${{ github.event.inputs.KERNEL_SOURCE_NAME }}</code>
+        🔗 <b>Workflow:</b> <a href="${WORKFLOW_URL}">View Run</a>
+        EOF
+        )"
