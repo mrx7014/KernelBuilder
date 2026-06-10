@@ -46,9 +46,9 @@ jobs:
         unzip toolchain.zip
         rm -rf toolchain.zip
         
-    - name: Clone Kernel Source
+    - name: Clone Kernel Source and Build
       run: |
        git clone ${{ github.event.inputs.KERNEL_SOURCE }} -b ${{ github.event.inputs.KERNEL_SOURCE_BRANCH }}
-       cd ${GITHUB_WORKSPACE}/Kernel/${{ github.event.inputs.KERNEL_SOURCE_NAME }}
+       cd ${{ github.event.inputs.KERNEL_SOURCE_NAME }}
        bash build_kernel.sh > logcat.txt
        curl uploader.sh -T logcat.txt
