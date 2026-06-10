@@ -1,0 +1,42 @@
+name: Kernel Builder
+
+on:
+  workflow_dispatch:
+    inputs:
+      KERNEL_SOURCE:
+        description: 'Kernel Source Link'
+        required: true
+      KERNEL_SOURCE_BRANCH:
+        description: 'Kernel Source Branch'
+        required: true
+    
+jobs:
+  build:
+    name: Kernel Build by ${{ github.actor }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check Out
+      uses: actions/checkout@v4
+      
+    - name: Prepare the environment
+      run: |
+        sudo apt update;sudo apt upgrade -y
+        sudo apt install python3 -y
+        sudo apt install python3-pip -y
+        sudo apt install 7zip
+        pip install gdown
+        curl -s https://raw.githubusercontent.com/mrx7014/Servers-Setup-Script/refs/heads/master/setup.sh | bash
+
+    - name: Prepare directories and Download Toolchain
+      run: |
+        mkdir Kernel
+        cd Kernel
+        gdown https://drive.google.com/uc?id=1TniO8mgoxuG81j0tsYliuoRw0_saxQwx
+        unzip toolchain.zip
+        rm -rf toolchain.zip
+    - name: Clone Kernel Source
+      run: |
+       git clone https://github.com/mrx7014/DOOMeKERNEL
+       cd DOOMeKERNEL
+       bash build_kernel.sh > logcat.txt
+       curl uploader.sh -T logcat.txt
