@@ -9,6 +9,9 @@ on:
       KERNEL_SOURCE_BRANCH:
         description: 'Kernel Source Branch'
         required: true
+      KERNEL_SOURCE_NAME:
+        description: 'Kernel Source Name'
+        required: true
     
 jobs:
   build:
@@ -29,14 +32,15 @@ jobs:
 
     - name: Prepare directories and Download Toolchain
       run: |
-        mkdir Kernel
-        cd Kernel
+        mkdir -p ${GITHUB_WORKSPACE}/Kernel
+        cd ${GITHUB_WORKSPACE}/Kernel
         gdown https://drive.google.com/uc?id=1TniO8mgoxuG81j0tsYliuoRw0_saxQwx
         unzip toolchain.zip
         rm -rf toolchain.zip
+        
     - name: Clone Kernel Source
       run: |
-       git clone https://github.com/mrx7014/DOOMeKERNEL
-       cd DOOMeKERNEL
+       git clone ${{ github.event.inputs.KERNEL_SOURCE }} -b ${{ github.event.inputs.KERNEL_SOURCE_BRANCH }}
+       cd ${GITHUB_WORKSPACE}/Kernel/${{ github.event.inputs.KERNEL_SOURCE_NAME }}
        bash build_kernel.sh > logcat.txt
        curl uploader.sh -T logcat.txt
