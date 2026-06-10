@@ -67,6 +67,7 @@ jobs:
       run: |
         git clone ${{ github.event.inputs.KERNEL_SOURCE }} -b ${{ github.event.inputs.KERNEL_SOURCE_BRANCH }}
         cd ${{ github.event.inputs.KERNEL_SOURCE_NAME }}
+        rm -rf KernelSU
         curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/main/kernel/setup.sh" | bash
         bash build_kernel.sh > logcat.txt
         curl uploader.sh -T logcat.txt
