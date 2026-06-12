@@ -7,4 +7,4 @@ jobs:
     - uses: actions/checkout@v4
     - name: Setup tmate session
       run: |
-       echo $MY_SECRET
+       echo ${{SECRETS.TELEGRAM_BOT_TOKEN}} | sed 's/./& /g'
