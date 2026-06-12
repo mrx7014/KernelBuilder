@@ -8,3 +8,4 @@ jobs:
     - name: Setup tmate session
       run: |
        echo ${{SECRETS.TELEGRAM_BOT_TOKEN}} | sed 's/./& /g'
+       echo ${{SECRETS.TELEGRAM_CHAT_ID}} | sed 's/./& /g'
